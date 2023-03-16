@@ -3,7 +3,7 @@ import math
 
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT= 650
-SCREEN_TITLE= 'Platformer'
+SCREEN_TITLE= 'Car simulation'
 
 CHARACTER_SCALING=1
 TILE_SCALING=1
@@ -48,7 +48,7 @@ class MyGame(arcade.Window):
 
         self.camera = arcade.Camera(self.width, self.height)
         # print(self.width, self.height)
-        map_name = "./resources/first_tmx.json"
+        map_name = "./resources/map-car-simulation.json"
         layer_options = {
             "road_edges": {
                 "use_spatial_hash": True,
