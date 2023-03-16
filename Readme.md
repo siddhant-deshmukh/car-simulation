@@ -4,5 +4,21 @@ The main purpose of this project is to create an environment where we can contro
 
 Required:
 
-Python 3.10.6
-arcade 2.6.17
+1. Python 3.10.6
+2. arcade 2.6.17   
+
+To Download python visit
+https://www.python.org/downloads/
+
+To install arcade
+
+`
+pip install arcade
+`
+
+
+To run game go to /car-simluation dir and just run
+
+`
+python main.py
+`
