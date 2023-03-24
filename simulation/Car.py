@@ -11,3 +11,5 @@ class PlayerCar(arcade.Sprite):
     def speed(self):
         # return euclidian distance * current fps (60 default)
         return int(sqrt(pow(self.change_x, 2) + pow(self.change_y, 2)) * 60)
+
+    # def 
