@@ -16,8 +16,8 @@ MAX_ACCELERATION = 0.5
 MIN_VELOCITY = 0.05
 
 class CollegeMap(arcade.Section):
-    def __init__(self, left: int, bottom: int, width: int, height: int,):
-        super().__init__(left, bottom, width, height)
+    def __init__(self, left: int, bottom: int, width: int, height: int,**kwargs):
+        super().__init__(left, bottom, width, height, **kwargs)
         self.scene = None
         self.tile_map = None
 
@@ -168,8 +168,8 @@ class CollegeMap(arcade.Section):
         # return super().on_update(delta_time)
 
 class EmptyMap(arcade.Section):
-    def __init__(self, left: int, bottom: int, width: int, height: int,):
-        super().__init__(left, bottom, width, height)
+    def __init__(self, left: int, bottom: int, width: int, height: int,**kwargs):
+        super().__init__(left, bottom, width, height, **kwargs)
         self.scene = None
         
 
@@ -186,13 +186,13 @@ class EmptyMap(arcade.Section):
         self.scene = arcade.Scene()
         image_source = "./resources/car.png"
 
-        self.player_sprite = Car.PlayerCar(image_source,CHARACTER_SCALING,center_x=20,center_y=160)
+        self.player_sprite = Car.PlayerCar(image_source,CHARACTER_SCALING,center_x=200,center_y=200)
 
         self.scene.add_sprite('Player',self.player_sprite)
         self.physics_engine = arcade.PhysicsEnginePlatformer(
             self.player_sprite, gravity_constant=0
         )
-        
+    
 
     def on_draw(self):
         # self.clear()
@@ -214,8 +214,11 @@ class EmptyMap(arcade.Section):
         #     self.player_sprite.change_y = -PLAYER_MOVEMENT_SPEED
         if key == arcade.key.LEFT or key == arcade.key.A:
             self.player_sprite.change_angle = CAR_ROTATION_SPEED
+            self.player_sprite.steering_angle += 5
+
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.player_sprite.change_angle = -CAR_ROTATION_SPEED
+            self.player_sprite.steering_angle -= 5
 
         # return super().on_key_press(symbol, modifiers)
     def on_key_release(self, key, modifiers):
@@ -260,21 +263,12 @@ class EmptyMap(arcade.Section):
             self.player_sprite.center_x = 0
         elif (self.player_sprite.center_x < 0 ):
             self.player_sprite.center_x = self.width
-            
+
         if (self.player_sprite.center_y > self.height ):
             self.player_sprite.center_y = 0
         elif (self.player_sprite.center_y < 0):
             self.player_sprite.center_y = self.height
 
     def on_update(self, delta_time: float):
-        # if (self.player_sprite.center_x > 1250 and self.player_sprite.change_x > 0) or (self.player_sprite.center_x < 0 and self.player_sprite.change_x < 0):
-        #     self.player_sprite.change_x = 0
-        
         self.move_car_mode()
-        # if (self.player_sprite.center_x > 1250 and self.player_sprite.change_x > 0):
-        #     self.player_sprite.center_x = 0
-        # elif (self.player_sprite.center_x < 0 and self.player_sprite.change_x < 0):
-        #     self.player_sprite.center_x = 1250
         self.physics_engine.update()
-        
-        # return super().on_update(delta_time)

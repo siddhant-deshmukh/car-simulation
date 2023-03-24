@@ -4,10 +4,10 @@ and the three ways to process button events.
 """
 import arcade
 import arcade.gui
-from simulation import Car, Game_Sections
+from simulation import Car, Game_Sections, Other_Sections
 import math
 
-
+INFO_BAR_HEIGHT = 100
 
 # --- Method 1 for handling click events,
 # Create a child class.
@@ -90,15 +90,22 @@ class MyGame(arcade.View):
         # super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, resizable=True) 
         super().__init__() 
         
+        self.info_bar = Other_Sections.InfoBar(0, self.window.height - INFO_BAR_HEIGHT,
+                                self.window.width, INFO_BAR_HEIGHT,
+                                accept_keyboard_events=False)
+        if(map_type == 'college'):
+            self.game_section = Game_Sections.CollegeMap(0, 0, self.window.width, self.window.height - INFO_BAR_HEIGHT)
+        else:
+            self.game_section = Game_Sections.EmptyMap(0, 0, self.window.width, self.window.height - INFO_BAR_HEIGHT)
+            
+
         # self.player_list = None 
         # self.wall_list = None 
-        if(map_type == 'college'):
-            self.game_section = Game_Sections.CollegeMap(0,0,self.window.width,self.window.height)
-        else:
-            self.game_section = Game_Sections.EmptyMap(0,0,self.window.width,self.window.height)
+
+        arcade.set_background_color(arcade.csscolor.CORNFLOWER_BLUE)
         self.game_section.setup()
         self.section_manager.add_section(self.game_section)
-        arcade.set_background_color(arcade.csscolor.CORNFLOWER_BLUE)
+        self.section_manager.add_section(self.info_bar)
 
     def setup(self):
         pass
