@@ -35,8 +35,12 @@ class InfoBar(arcade.Section):
         arcade.draw_text(f'Speed: {round(math.sqrt(self.car.velocity[0]**2 + self.car.velocity[1]**2),2)}',
                          self.left + self.width / 2 + 250, self.top -  25,
                          COLOR_LIGHT,font_size=20)
-        arcade.draw_text(f'Speed: {round(self.view.game_section.acceleration ,2)}',
+        arcade.draw_text(f'Accelerator: {round(self.car.accelerator_angle ,2)}',
                          self.left + self.width / 2 + 250, self.top -  65,
+                         COLOR_LIGHT,font_size=20)
+
+        arcade.draw_text(f'Angle: {round(self.car.angle ,2)}',
+                         self.left + self.width / 2 - 250, self.top -  65,
                          COLOR_LIGHT,font_size=20)
         # arcade.draw_text(f'Center x: {round(self.car.center_x,2)}',
         #                  self.left + self.width / 2 + 250, self.top -  20,

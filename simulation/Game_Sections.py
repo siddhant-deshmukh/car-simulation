@@ -10,7 +10,7 @@ GRAVITY = 0
 PLAYER_JUMP_SPEED = 20
 ACCELERATION_ON_BREAK = -0.09
 ACCELERATION_ON_NOTHING = -0.01
-ACCELERATION_ON_GEAR_CONSTANT = 0.005
+ACCELERATION_ON_GEAR_CONSTANT = 0.03
 MAX_VELOCITY = 5
 MAX_ACCELERATION = 0.5
 MIN_VELOCITY = 0.05
@@ -33,6 +33,9 @@ class GameMap(arcade.Section):
         self.car_img_resource = car_img_resource
         self.map_resource = map_resource
         
+        self.acceleration_key = ''
+        self.turning_key = ''
+        
     def setup(self):
         self.setup_camera()
         self.setup_scene()
@@ -43,7 +46,7 @@ class GameMap(arcade.Section):
         self.scene = arcade.Scene()
         image_source = self.car_img_resource
 
-        self.player_sprite = Car.PlayerCar(image_source,CHARACTER_SCALING,center_x=20,center_y=160)
+        self.player_sprite = Car.PlayerCar(image_source,CHARACTER_SCALING,center_x=50,center_y=160)
 
         self.scene.add_sprite('Player',self.player_sprite)
 
@@ -60,10 +63,11 @@ class GameMap(arcade.Section):
             }
             self.tile_map = arcade.load_tilemap(map_name, TILE_SCALING, layer_options)
             self.scene = arcade.Scene.from_tilemap(self.tile_map)
-            if self.tile_map.background_color:
-                arcade.set_background_color(self.tile_map.background_color)
+            # if self.tile_map.background_color:
+            #     arcade.set_background_color(self.tile_map.background_color)
 
-            
+            self.scene.add_sprite('Player',self.player_sprite)
+        
             self.physics_engine = arcade.PhysicsEnginePlatformer(
                 self.player_sprite, gravity_constant=0, walls=self.scene["road_edges"]
             )
@@ -96,26 +100,23 @@ class GameMap(arcade.Section):
         self.camera.move_to(player_centered)
 
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.UP or key == arcade.key.W:
-            self.mode = 1
-        elif key == arcade.key.DOWN or key == arcade.key.SPACE:
-            self.mode = 0
-        # if key == arcade.key.DOWN or key == arcade.key.S:
-        #     self.player_sprite.change_y = -PLAYER_MOVEMENT_SPEED
-        if key == arcade.key.LEFT or key == arcade.key.A:
-            self.player_sprite.change_angle = CAR_ROTATION_SPEED
-        elif key == arcade.key.RIGHT or key == arcade.key.D:
-            self.player_sprite.change_angle = -CAR_ROTATION_SPEED
+        if key == arcade.key.SPACE :
+            self.acceleration_key = 'BRAK'
+        elif key == arcade.key.UP or key == arcade.key.W:
+            self.acceleration_key = 'UP'
+        elif key == arcade.key.DOWN or key == arcade.key.S:
+            self.acceleration_key = 'DOWN'
 
-        # return super().on_key_press(symbol, modifiers)
-    def on_key_release(self, key, modifiers):
-        """Called when the user releases a key."""
-        if key == arcade.key.UP or key == arcade.key.W or key == arcade.key.DOWN or key == arcade.key.SPACE:
-            self.mode = 2
         if key == arcade.key.LEFT or key == arcade.key.A:
-            self.player_sprite.change_angle = 0
+            self.turning_key = 'LEFT'
         elif key == arcade.key.RIGHT or key == arcade.key.D:
-            self.player_sprite.change_angle = 0
+            self.turning_key = 'RIGHT'
+
+    def on_key_release(self, key, modifiers):
+        if key == arcade.key.UP or key==arcade.key.W or key == arcade.key.DOWN or key == arcade.key.SPACE or key==arcade.key.S:
+            self.acceleration_key = ''
+        if key == arcade.key.LEFT or key == arcade.key.A or key == arcade.key.D or key == arcade.key.RIGHT:
+            self.turning_key = ''
 
     def move_car_mode(self):
 
@@ -157,7 +158,11 @@ class GameMap(arcade.Section):
             self.player_sprite.change_y = 0
 
     def on_update(self, delta_time: float):
-        self.move_car_mode()
+        # self.move_car_mode()
+        self.player_sprite.control_key_acc(self.acceleration_key)
+        self.player_sprite.control_key_turn(self.turning_key)
+        self.restrict_movement()
+        
         self.physics_engine.update()
         self.center_camera_to_player()
         
