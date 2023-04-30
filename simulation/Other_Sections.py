@@ -21,7 +21,7 @@ class InfoBar(arcade.Section):
         # print(self.car.velocity)
         # draw game info
         self.steering_wheel.angle = self.car.steering_angle
-        arcade.draw_lrtb_rectangle_filled(self.left, self.right, self.top,
+        arcade.draw_lrtb_rectangle_filled(self.left, self.right, self.top, 
                                           self.bottom, color=arcade.color.DARK_BROWN)
         arcade.draw_lrtb_rectangle_outline(self.left, self.right, self.top,
                                            self.bottom, COLOR_LIGHT)
@@ -41,6 +41,9 @@ class InfoBar(arcade.Section):
 
         arcade.draw_text(f'Angle: {round(self.car.angle ,2)}',
                          self.left + self.width / 2 - 250, self.top -  65,
+                         COLOR_LIGHT,font_size=20)
+        arcade.draw_text(f'Wheel Angle: {round(self.car.steering_angle ,2)}',
+                         self.left + self.width / 2 - 250, self.top -  25,
                          COLOR_LIGHT,font_size=20)
         # arcade.draw_text(f'Center x: {round(self.car.center_x,2)}',
         #                  self.left + self.width / 2 + 250, self.top -  20,

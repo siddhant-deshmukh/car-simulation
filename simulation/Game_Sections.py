@@ -26,7 +26,7 @@ class GameMap(arcade.Section):
         self.physics_engine = None 
         self.camera = None
 
-        self.mode = 0
+        # self.mode = 0
         self.acceleration = 0
         self.velocity = 0
 
@@ -101,7 +101,7 @@ class GameMap(arcade.Section):
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.SPACE :
-            self.acceleration_key = 'BRAK'
+            self.acceleration_key = 'BRAKE'
         elif key == arcade.key.UP or key == arcade.key.W:
             self.acceleration_key = 'UP'
         elif key == arcade.key.DOWN or key == arcade.key.S:
@@ -118,36 +118,36 @@ class GameMap(arcade.Section):
         if key == arcade.key.LEFT or key == arcade.key.A or key == arcade.key.D or key == arcade.key.RIGHT:
             self.turning_key = ''
 
-    def move_car_mode(self):
+    # def move_car_mode(self):
 
-        if self.mode == 0:  #break
-            if self.velocity > MIN_VELOCITY:
-                self.acceleration = ACCELERATION_ON_BREAK
-                self.velocity += self.acceleration 
-            else:
-                self.acceleration = 0
-                self.velocity = 0
-        elif self.mode == 1: #acceleration
-            # print(self.player_sprite.angle)
+    #     if self.mode == 0:  #break
+    #         if self.velocity > MIN_VELOCITY:
+    #             self.acceleration = ACCELERATION_ON_BREAK
+    #             self.velocity += self.acceleration 
+    #         else:
+    #             self.acceleration = 0
+    #             self.velocity = 0
+    #     elif self.mode == 1: #acceleration
+    #         # print(self.player_sprite.angle)
 
-            if self.acceleration < 0 :
-                self.acceleration = 0
-            self.acceleration += ACCELERATION_ON_GEAR_CONSTANT
-            self.velocity += self.acceleration 
-            if self.acceleration > MAX_ACCELERATION:
-                self.acceleration = MAX_ACCELERATION
-            if self.velocity > MAX_VELOCITY:
-                self.velocity = MAX_VELOCITY 
-        else: #stoped acceleration
-            self.acceleration = ACCELERATION_ON_NOTHING
-            self.velocity += self.acceleration 
-            if self.velocity < MIN_VELOCITY:
-                self.velocity = 0
+    #         if self.acceleration < 0 :
+    #             self.acceleration = 0
+    #         self.acceleration += ACCELERATION_ON_GEAR_CONSTANT
+    #         self.velocity += self.acceleration 
+    #         if self.acceleration > MAX_ACCELERATION:
+    #             self.acceleration = MAX_ACCELERATION
+    #         if self.velocity > MAX_VELOCITY:
+    #             self.velocity = MAX_VELOCITY 
+    #     else: #stoped acceleration
+    #         self.acceleration = ACCELERATION_ON_NOTHING
+    #         self.velocity += self.acceleration 
+    #         if self.velocity < MIN_VELOCITY:
+    #             self.velocity = 0
                 
-        self.player_sprite.change_x = self.velocity * -1*math.sin(self.player_sprite.radians)
-        self.player_sprite.change_y = self.velocity * 1*math.cos(self.player_sprite.radians) 
+    #     self.player_sprite.change_x = self.velocity * -1*math.sin(self.player_sprite.radians)
+    #     self.player_sprite.change_y = self.velocity * 1*math.cos(self.player_sprite.radians) 
         
-        self.restrict_movement()
+    #     self.restrict_movement()
 
         
     def restrict_movement(self):
@@ -159,8 +159,8 @@ class GameMap(arcade.Section):
 
     def on_update(self, delta_time: float):
         # self.move_car_mode()
-        self.player_sprite.control_key_acc(self.acceleration_key)
         self.player_sprite.control_key_turn(self.turning_key)
+        self.player_sprite.control_key_acc(self.acceleration_key)
         self.restrict_movement()
         
         self.physics_engine.update()

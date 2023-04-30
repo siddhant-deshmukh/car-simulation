@@ -10,7 +10,7 @@ def main():
     # window = MyGame()
     # window.setup()
     # arcade.run()
-    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, "Car simulation", resizable=True)
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, "Car simulation", resizable=True, vsync=True)
     view = Views.MyView()
     window.show_view(view)
     arcade.run()
