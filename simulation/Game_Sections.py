@@ -42,11 +42,12 @@ class GameMap(arcade.Section):
         
     def setup_camera(self):
         self.camera = arcade.Camera(self.width, self.height)
+    
     def setup_scene(self):
         self.scene = arcade.Scene()
         image_source = self.car_img_resource
 
-        self.player_sprite = Car.PlayerCar(image_source,CHARACTER_SCALING,center_x=50,center_y=160)
+        self.player_sprite = Car.PlayerCar(image_source,CHARACTER_SCALING,center_x=100,center_y=160)
 
         self.scene.add_sprite('Player',self.player_sprite)
 
@@ -168,7 +169,7 @@ class GameMap(arcade.Section):
         
 class CollegeMap(GameMap):
     def __init__(self,left: int, bottom: int, width: int, height: int,**kwargs):
-        super().__init__("./resources/car.png","./resources/map-car-simulation.json",left, bottom, width, height, **kwargs)
+        super().__init__("./resources/car.png","./resources/simple_path.json",left, bottom, width, height, **kwargs)
 
 
 class EmptyMap(GameMap):
