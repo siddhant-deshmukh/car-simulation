@@ -16,6 +16,9 @@ class InfoBar(arcade.Section):
     @property
     def car(self):
         return self.view.game_section.player_sprite 
+    @property
+    def radars(self):
+        return self.view.game_section.radars
 
     def on_draw(self):
         # print(self.car.velocity)
@@ -27,24 +30,46 @@ class InfoBar(arcade.Section):
                                            self.bottom, COLOR_LIGHT)
         self.steering_wheel.draw()
         arcade.draw_text(f'Velocity x: {round(self.car.velocity[0],2)}',
-                         self.left + self.width / 2, self.top - 25,
-                         COLOR_LIGHT,font_size=20)
+                         self.left + self.width / 2, self.top - 15,
+                         COLOR_LIGHT,font_size=15)
         arcade.draw_text(f'Velocity y: {round(self.car.velocity[1],2)}',
-                         self.left + self.width / 2, self.top -  65,
-                         COLOR_LIGHT,font_size=20)
+                         self.left + self.width / 2, self.top -  45,
+                         COLOR_LIGHT,font_size=15)
         arcade.draw_text(f'Speed: {round(math.sqrt(self.car.velocity[0]**2 + self.car.velocity[1]**2),2)}',
-                         self.left + self.width / 2 + 250, self.top -  25,
-                         COLOR_LIGHT,font_size=20)
-        arcade.draw_text(f'Accelerator: {round(self.car.accelerator_angle ,2)}',
-                         self.left + self.width / 2 + 250, self.top -  65,
-                         COLOR_LIGHT,font_size=20)
+                         self.left + self.width / 2, self.top -  75,
+                         COLOR_LIGHT,font_size=15)
 
-        arcade.draw_text(f'Angle: {round(self.car.angle ,2)}',
-                         self.left + self.width / 2 - 250, self.top -  65,
-                         COLOR_LIGHT,font_size=20)
         arcade.draw_text(f'Wheel Angle: {round(self.car.steering_angle ,2)}',
-                         self.left + self.width / 2 - 250, self.top -  25,
-                         COLOR_LIGHT,font_size=20)
+                         self.left + self.width / 2 - 250, self.top -  15,
+                         COLOR_LIGHT,font_size=15)
+        arcade.draw_text(f'Angle: {round(self.car.angle ,2)}',
+                         self.left + self.width / 2 - 250, self.top -  45,
+                         COLOR_LIGHT,font_size=15)
+        arcade.draw_text(f'Accelerator: {round(self.car.accelerator_angle ,2)}',
+                         self.left + self.width / 2 - 250, self.top -  85,
+                         COLOR_LIGHT,font_size=15)
+        
+
+        arcade.draw_text(f'Raders:',
+                         self.left + self.width / 2 + 250, self.top -  15,
+                         COLOR_LIGHT,font_size=12)
+        arcade.draw_text(f'  Side Left: {round(self.radars[0] ,2)}',
+                         self.left + self.width / 2 + 250, self.top -  30,
+                         COLOR_LIGHT,font_size=10)
+        arcade.draw_text(f'  Side Right: {round(self.radars[4] ,2)}',
+                         self.left + self.width / 2 + 250, self.top -  45,
+                         COLOR_LIGHT,font_size=10)
+        arcade.draw_text(f'  30 Left: {round(self.radars[1] ,2)}',
+                         self.left + self.width / 2 + 250, self.top -  60,
+                         COLOR_LIGHT,font_size=10)
+        arcade.draw_text(f'  30 Right: {round(self.radars[3] ,2)}',
+                         self.left + self.width / 2 + 250, self.top -  75,
+                         COLOR_LIGHT,font_size=10)
+        
+        arcade.draw_text(f'  front: {round(self.radars[2] ,2)}',
+                         self.left + self.width / 2 + 250, self.top -  90,
+                         COLOR_LIGHT,font_size=10)
+        
         # arcade.draw_text(f'Center x: {round(self.car.center_x,2)}',
         #                  self.left + self.width / 2 + 250, self.top -  20,
         #                  COLOR_LIGHT)
