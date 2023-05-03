@@ -8,7 +8,7 @@ MIN_STEERING_ANGLE = -45
 CONSTANT_INCREASE_ACCELERATOR = 2
 CONSTANT_INCREASE_STEERING = 5
 
-LENGTH_OF_CAR = 2
+LENGTH_OF_CAR = 1.5
 MASS_OF_CAR = 1500
 TRACTION_FORCE_CONSTANT = 3
 DRAG_FORCE_CONSTANT =0.45
@@ -32,20 +32,10 @@ class PlayerCar(arcade.Sprite):
         # return euclidian distance * current fps (60 default)
         return int(sqrt(pow(self.change_x, 2) + pow(self.change_y, 2)) * 60)
 
-    # def control_acceleration(self,mode:str ):
-    #     if(mode == 'UP'):
-    #         pass
-    #     elif(mode == 'DOWN'):
-    #         pass 
-    #     elif(mode =='BRAK'):
-    #         pass
-    #     else:
-    #         pass
-    # def control_turning(self,mode:str):
-    #     if(mode =='LEFT'):
-    #         pass
-    #     else:
-    #         pass
+
+    # ----------------------------------------------------------------------------------------------------------------------------
+    #                                      Main function to do actually move car and control its speed
+    # ----------------------------------------------------------------------------------------------------------------------------
 
     def control_key_acc(self,mode:str):
         speed = sqrt(self.change_x**2 + self.change_y**2)
@@ -76,7 +66,8 @@ class PlayerCar(arcade.Sprite):
                     self.change_y = change_y
 
             self.accelerator_angle = 0
-
+            self.change_angle = 0
+            
         else:
             if(mode == 'UP'):
                 if self.accelerator_angle < 0:
@@ -146,12 +137,12 @@ class PlayerCar(arcade.Sprite):
         elif (mode == 'RIGHT'):
             self.steering_angle -= 1.2
         else:
-            if self.steering_angle > 4:
-                self.steering_angle -= 2
-            elif self.steering_angle < -4:
-                self.steering_angle += 2
-            else:
-                self.steering_angle = 0
+            # if self.steering_angle > 4:
+            #     self.steering_angle -= 2
+            # elif self.steering_angle < -4:
+            #     self.steering_angle += 2
+            # else:
+            self.steering_angle = 0
             pass
         if self.steering_angle > MAX_STEERING_ANGLE:
             self.steering_angle = MAX_STEERING_ANGLE

@@ -39,7 +39,7 @@ class GameMap(arcade.Section):
         
         self.layer_grid_array = np.array([])   
 
-        self.radars = [0,0,0,0,0,0]
+        self.radars = [-1,-1,-1,-1,-1,-1]
 
     def setup(self):
         self.setup_camera()
@@ -56,7 +56,7 @@ class GameMap(arcade.Section):
 
         self.scene.add_sprite('Player',self.player_sprite)
 
-        print(self.player_sprite.width, self.player_sprite.height)
+        # print(self.player_sprite.width, self.player_sprite.height)
 
         map_name = self.map_resource
         if(map_name == None):
@@ -73,13 +73,13 @@ class GameMap(arcade.Section):
             self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
 
-            print(self.tile_map.height, self.tile_map.width, self.tile_map.tile_height, self.tile_map.tile_width)
-            print(self.tile_map.sprite_lists['road_edges'], self.tile_map.tiled_map.layers[0].size.height)
+            # print(self.tile_map.height, self.tile_map.width, self.tile_map.tile_height, self.tile_map.tile_width)
+            # print(self.tile_map.sprite_lists['road_edges'], self.tile_map.tiled_map.layers[0].size.height)
             # print(self.tile_map.tiled_map.layers[0].data)
 
             self.layer_grid_array = np.array(self.tile_map.tiled_map.layers[0].data)
-            print()
-            print(self.layer_grid_array[40:,:10])
+            # print()
+            # print(self.layer_grid_array[40:,:10])
             # print()
             # print(self.layer_grid_array)
             # if self.tile_map.background_color:
@@ -141,31 +141,42 @@ class GameMap(arcade.Section):
             self.turning_key = ''
 
     def check_collision_with_wall(self):
+
         if(self.tile_map != None):
             pos_x = self.player_sprite.center_x
             pos_y = self.player_sprite.center_y
-            player_width = self.player_sprite.width//2
-            player_height = self.player_sprite.height//2
+            player_width = self.player_sprite.width//2   + 7
+            player_height = self.player_sprite.height//2 + 7
 
             tile_width = self.tile_map.tile_width
             tile_height = self.tile_map.tile_height
             no_of_tiles_x = self.tile_map.tiled_map.layers[0].size.width # self.tile_map.width
             no_of_tiles_y = self.tile_map.tiled_map.layers[0].size.height # self.tile_map.height
-            if(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height)//tile_height) , int((pos_x + player_width)//tile_width)] != 0):
+
+            ang = ((self.player_sprite.angle + 90)%360)*0.0174533
+            
+            # print( 'x :', int((pos_x + player_width*math.cos(ang + math.pi/4)))//tile_width , '\t y:', no_of_tiles_y - 1 - int((pos_y + player_height*math.sin(ang + math.pi/4)))//tile_height)
+            
+
+            if(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.sin(ang + math.pi/4))//tile_height) , int((pos_x + player_width*math.cos(ang + math.pi/4))//tile_width)] != 0):
+                print('45')
                 pass
-            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y - player_height)//tile_height) , int((pos_x + player_width)//tile_width)] != 0):
+            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.sin(ang - math.pi/4))//tile_height) , int((pos_x + player_width*math.cos(ang - math.pi/4))//tile_width)] != 0):
+                print('-45')
                 pass
-            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height)//tile_height) , int((pos_x - player_width)//tile_width)] != 0):
+            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.sin(ang + 3*math.pi/4))//tile_height) , int((pos_x + player_width*math.cos(ang + 3*math.pi/4))//tile_width)] != 0):
+                print('-135')
                 pass
-            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y - player_height)//tile_height) , int((pos_x - player_width)//tile_width)] != 0):
+            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.sin(ang - 3*math.pi/4))//tile_height) , int((pos_x + player_width*math.cos(ang - 3*math.pi/4))//tile_width)] != 0):
+                print('135')
                 pass
             else:
                 return 
             print('Collision' , tile_height, tile_width, player_height, player_width, pos_x , pos_y)
-            print(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height)//tile_height) , int((pos_x + player_width)//tile_width)] , no_of_tiles_y - 1 - int((pos_y + player_height)//tile_height) , int((pos_x + player_width)//tile_width) )
-            print(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height)//tile_height) , int((pos_x - player_width)//tile_width)] , no_of_tiles_y - 1 - int((pos_y + player_height)//tile_height) , int((pos_x - player_width)//tile_width) )
-            print(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y - player_height)//tile_height) , int((pos_x - player_width)//tile_width)] , no_of_tiles_y - 1 - int((pos_y - player_height)//tile_height) , int((pos_x - player_width)//tile_width) )
-            print(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y - player_height)//tile_height) , int((pos_x + player_width)//tile_width)] , no_of_tiles_y - 1 - int((pos_y - player_height)//tile_height) , int((pos_x + player_width)//tile_width) )
+            # print(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height)//tile_height) , int((pos_x + player_width)//tile_width)] , no_of_tiles_y - 1 - int((pos_y + player_height)//tile_height) , int((pos_x + player_width)//tile_width) )
+            # print(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height)//tile_height) , int((pos_x - player_width)//tile_width)] , no_of_tiles_y - 1 - int((pos_y + player_height)//tile_height) , int((pos_x - player_width)//tile_width) )
+            # print(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y - player_height)//tile_height) , int((pos_x - player_width)//tile_width)] , no_of_tiles_y - 1 - int((pos_y - player_height)//tile_height) , int((pos_x - player_width)//tile_width) )
+            # print(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y - player_height)//tile_height) , int((pos_x + player_width)//tile_width)] , no_of_tiles_y - 1 - int((pos_y - player_height)//tile_height) , int((pos_x + player_width)//tile_width) )
             
             print()
 
@@ -180,8 +191,6 @@ class GameMap(arcade.Section):
         if(self.tile_map != None):
             pos_x = self.player_sprite.center_x
             pos_y = self.player_sprite.center_y
-            player_width = self.player_sprite.width//2
-            player_height = self.player_sprite.height//2
 
             ang = (self.player_sprite.angle + 90)%360
             
@@ -189,14 +198,15 @@ class GameMap(arcade.Section):
             tile_height = self.tile_map.tile_height
             no_of_tiles_x = self.tile_map.tiled_map.layers[0].size.width # self.tile_map.width
             no_of_tiles_y = self.tile_map.tiled_map.layers[0].size.height
-
+            
+            radars = [-1,-1,-1,-1,-1,-1]
             for i in range(0,200,10):
                 check_x = pos_x + i*math.cos(ang * 0.0174533)
                 check_y = pos_y + i*math.sin(ang * 0.0174533)
 
                 # print(check_x,check_y)
                 if(self.layer_grid_array[no_of_tiles_y - 1 - int(check_y//tile_height) , int(check_x//tile_width)] != 0):
-                    self.radars[2] = i
+                    radars[2] = i
                     # print(i)
                     break
             
@@ -207,7 +217,7 @@ class GameMap(arcade.Section):
 
                 # print(check_x,check_y)
                 if(self.layer_grid_array[no_of_tiles_y - 1 - int(check_y//tile_height) , int(check_x//tile_width)] != 0):
-                    self.radars[3] = i
+                    radars[3] = i
                     # print(i)
                     break
             
@@ -218,31 +228,32 @@ class GameMap(arcade.Section):
 
                 # print(check_x,check_y)
                 if(self.layer_grid_array[no_of_tiles_y - 1 - int(check_y//tile_height) , int(check_x//tile_width)] != 0):
-                    self.radars[1] = i
+                    radars[1] = i
                     # print(i)
                     break
             ang = (self.player_sprite.angle + 90 + 90)%360
-            for i in range(0,200,10):
+            for i in range(0,100,10):
                 check_x = pos_x + i*math.cos(ang* 0.0174533)
                 check_y = pos_y + i*math.sin(ang* 0.0174533)
 
                 # print(check_x,check_y)
                 if(self.layer_grid_array[no_of_tiles_y - 1 - int(check_y//tile_height) , int(check_x//tile_width)] != 0):
-                    self.radars[0] = i
+                    radars[0] = i
                     # print(i)
                     break
 
             ang = (self.player_sprite.angle + 90 - 90)%360
-            for i in range(0,200,10):
+            for i in range(0,100,10):
                 check_x = pos_x + i*math.cos(ang* 0.0174533)
                 check_y = pos_y + i*math.sin(ang* 0.0174533)
 
                 # print(check_x,check_y)
                 if(self.layer_grid_array[no_of_tiles_y - 1 - int(check_y//tile_height) , int(check_x//tile_width)] != 0):
-                    self.radars[4] = i
+                    radars[4] = i
                     # print(i)
                     break
-            
+                
+            self.radars = radars[:]
 
     def draw_lines_direction(self):
         pos_x = self.player_sprite.center_x
@@ -266,6 +277,15 @@ class GameMap(arcade.Section):
         arcade.draw_circle_filled(pos_x + self.radars[1]*math.cos(ang3), pos_y + self.radars[1]*math.sin(ang3),3,arcade.color.RED)
         arcade.draw_circle_filled(pos_x + self.radars[4]*math.cos(ang4), pos_y + self.radars[4]*math.sin(ang4),3,arcade.color.BLACK)
         arcade.draw_circle_filled(pos_x + self.radars[0]*math.cos(ang5), pos_y + self.radars[0]*math.sin(ang5),3,arcade.color.BLACK)
+
+        ang = ((self.player_sprite.angle + 90)%360)*0.0174533
+        player_width = self.player_sprite.width//2   + 7
+        player_height = self.player_sprite.height//2 + 7
+
+        arcade.draw_circle_filled(pos_x + player_width*math.cos(ang + math.pi/4), pos_y + player_height*math.sin(ang + math.pi/4),3,arcade.color.PINK)
+        arcade.draw_circle_filled(pos_x + player_width*math.cos(ang - math.pi/4), pos_y + player_height*math.sin(ang - math.pi/4),3,arcade.color.PINK)
+        arcade.draw_circle_filled(pos_x + player_width*math.cos(ang + 3*math.pi/4), pos_y + player_height*math.sin(ang + 3*math.pi/4),3,arcade.color.PINK)
+        arcade.draw_circle_filled(pos_x + player_width*math.cos(ang - 3*math.pi/4), pos_y + player_height*math.sin(ang - 3*math.pi/4),3,arcade.color.PINK)
 
 
         # arcade.draw_line(pos_x,pos_y,pos_x-200*math.cos(ang),pos_y+200*math.sin(ang), arcade.color.RED)
@@ -326,7 +346,7 @@ class GameMap(arcade.Section):
 
         # self.move_car_mode()
 
-        # self.check_collision_with_wall()
+        self.check_collision_with_wall()
         self.player_sprite.control_key_turn(self.turning_key)
         self.player_sprite.control_key_acc(self.acceleration_key)
         self.restrict_movement()
