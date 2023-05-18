@@ -19,6 +19,7 @@ MIN_VELOCITY = 0.05
 class GameMap(arcade.Section):
     def __init__(self, car_img_resource, map_resource, left: int, bottom: int, width: int, height: int,**kwargs):
         super().__init__(left, bottom, width, height, **kwargs)
+        
         self.scene = None
         self.tile_map = None
 
@@ -279,13 +280,13 @@ class GameMap(arcade.Section):
         arcade.draw_circle_filled(pos_x + self.radars[0]*math.cos(ang5), pos_y + self.radars[0]*math.sin(ang5),3,arcade.color.BLACK)
 
         ang = ((self.player_sprite.angle + 90)%360)*0.0174533
-        player_width = self.player_sprite.width//2   + 7
-        player_height = self.player_sprite.height//2 + 7
+        player_width = self.player_sprite.width/2   + 7
+        player_height = self.player_sprite.height/2 + 7
 
-        arcade.draw_circle_filled(pos_x + player_width*math.cos(ang + math.pi/4), pos_y + player_height*math.sin(ang + math.pi/4),3,arcade.color.PINK)
-        arcade.draw_circle_filled(pos_x + player_width*math.cos(ang - math.pi/4), pos_y + player_height*math.sin(ang - math.pi/4),3,arcade.color.PINK)
-        arcade.draw_circle_filled(pos_x + player_width*math.cos(ang + 3*math.pi/4), pos_y + player_height*math.sin(ang + 3*math.pi/4),3,arcade.color.PINK)
-        arcade.draw_circle_filled(pos_x + player_width*math.cos(ang - 3*math.pi/4), pos_y + player_height*math.sin(ang - 3*math.pi/4),3,arcade.color.PINK)
+        arcade.draw_circle_filled(pos_x + int(player_width*math.cos(ang + math.pi/4)), pos_y + int(player_height*math.sin(ang + math.pi/4)), 3,arcade.color.PINK)
+        arcade.draw_circle_filled(pos_x + int(player_width*math.cos(ang - math.pi/4)), pos_y + int(player_height*math.sin(ang - math.pi/4)), 3,arcade.color.PINK)
+        arcade.draw_circle_filled(pos_x + int(player_width*math.cos(ang + 3*math.pi/4)), pos_y + int(player_height*math.sin(ang + 3*math.pi/4)), 3,arcade.color.PINK)
+        arcade.draw_circle_filled(pos_x + int(player_width*math.cos(ang - 3*math.pi/4)), pos_y + int(player_height*math.sin(ang - 3*math.pi/4)), 3,arcade.color.PINK)
 
 
         # arcade.draw_line(pos_x,pos_y,pos_x-200*math.cos(ang),pos_y+200*math.sin(ang), arcade.color.RED)
