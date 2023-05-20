@@ -93,6 +93,8 @@ class MyGame(arcade.View):
         self.info_bar = Other_Sections.InfoBar(0, self.window.height - INFO_BAR_HEIGHT,
                                 self.window.width, INFO_BAR_HEIGHT,
                                 accept_keyboard_events=False)
+        
+        self.game_section : arcade.Section = Game_Sections.CollegeMap(0, 0, self.window.width, self.window.height - INFO_BAR_HEIGHT)
         if(map_type == 'college'):
             self.game_section = Game_Sections.CollegeMap(0, 0, self.window.width, self.window.height - INFO_BAR_HEIGHT)
         else:
@@ -106,6 +108,10 @@ class MyGame(arcade.View):
         self.game_section.setup()
         self.section_manager.add_section(self.game_section)
         self.section_manager.add_section(self.info_bar)
+
+    def on_resize(self, width: int, height: int):
+        self.game_section.width = width
+        self.game_section.height = height
 
     def setup(self):
         pass

@@ -101,23 +101,25 @@ class GameMap(arcade.Section):
         self.draw_lines_direction()
 
     def center_camera_to_player(self):
-        
+        # print(self.width , self.height)
+        self.camera.resize( self.width , self.height )
+
         screen_center_x = self.player_sprite.center_x - (self.camera.viewport_width / 2)
         screen_center_y = self.player_sprite.center_y - (
             self.camera.viewport_height / 2
         )
 
         # Don't let camera travel past 0
+        if screen_center_x > self.tile_map.width*self.tile_map.tile_width - 2*(self.camera.viewport_width / 2):
+            screen_center_x = self.tile_map.width*self.tile_map.tile_width  - (self.camera.viewport_width)
         if screen_center_x < 0:
             screen_center_x = 0
         # if self.player_sprite.center_x < 0 + (self.camera.viewport_width / 2):
         #     screen_center_x = 0
-        if screen_center_x > self.tile_map.width*self.tile_map.tile_width - 2*(self.camera.viewport_width / 2):
-            screen_center_x = self.tile_map.width*self.tile_map.tile_width  - (self.camera.viewport_width)
         if screen_center_y < 0:
             screen_center_y = 0
-        if screen_center_y > self.tile_map.height*self.tile_map.tile_height - 2*(self.camera.viewport_height / 2):
-            screen_center_y = self.tile_map.height*self.tile_map.tile_height  - (self.camera.viewport_height)
+        if screen_center_y > self.tile_map.height*self.tile_map.tile_height - 2*(self.camera.viewport_height / 2) + 100:
+            screen_center_y = self.tile_map.height*self.tile_map.tile_height  - 2*(self.camera.viewport_height / 2) + 100
         player_centered = screen_center_x, screen_center_y
 
         self.camera.move_to(player_centered)
@@ -146,8 +148,11 @@ class GameMap(arcade.Section):
         if(self.tile_map != None):
             pos_x = self.player_sprite.center_x
             pos_y = self.player_sprite.center_y
-            player_width = self.player_sprite.width//2   + 7
-            player_height = self.player_sprite.height//2 + 7
+            player_width = ((self.player_sprite.width/2)**2 + (self.player_sprite.height/2)**2)**0.5  + 3
+            player_height = ((self.player_sprite.width/2)**2 + (self.player_sprite.height/2)**2)**0.5  + 3
+
+            # player_width = self.player_sprite.width//2   + 7
+            # player_height = self.player_sprite.height//2 + 7
 
             tile_width = self.tile_map.tile_width
             tile_height = self.tile_map.tile_height
@@ -158,19 +163,20 @@ class GameMap(arcade.Section):
             
             # print( 'x :', int((pos_x + player_width*math.cos(ang + math.pi/4)))//tile_width , '\t y:', no_of_tiles_y - 1 - int((pos_y + player_height*math.sin(ang + math.pi/4)))//tile_height)
             
+            # pos_x  + int(player_width*math.sin(ang)), pos_y + int(player_width*math.cos(ang))
 
-            if(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.sin(ang + math.pi/4))//tile_height) , int((pos_x + player_width*math.cos(ang + math.pi/4))//tile_width)] != 0):
+            if(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.cos(ang + math.pi/4))//tile_height) , int((pos_x + player_width*math.sin(ang + math.pi/4))//tile_width)] != 0):
                 print('45')
-                pass
-            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.sin(ang - math.pi/4))//tile_height) , int((pos_x + player_width*math.cos(ang - math.pi/4))//tile_width)] != 0):
+            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.cos(ang - math.pi/4))//tile_height) , int((pos_x + player_width*math.sin(ang - math.pi/4))//tile_width)] != 0):
                 print('-45')
-                pass
-            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.sin(ang + 3*math.pi/4))//tile_height) , int((pos_x + player_width*math.cos(ang + 3*math.pi/4))//tile_width)] != 0):
+            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.cos(ang + 3*math.pi/4))//tile_height) , int((pos_x + player_width*math.sin(ang + 3*math.pi/4))//tile_width)] != 0):
                 print('-135')
-                pass
-            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.sin(ang - 3*math.pi/4))//tile_height) , int((pos_x + player_width*math.cos(ang - 3*math.pi/4))//tile_width)] != 0):
+            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.cos(ang - 3*math.pi/4))//tile_height) , int((pos_x + player_width*math.sin(ang - 3*math.pi/4))//tile_width)] != 0):
                 print('135')
-                pass
+            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.cos(ang))//tile_height) , int((pos_x + player_width*math.sin(ang ))//tile_width)] != 0):
+                print('0')
+            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.cos(ang + math.pi/2))//tile_height) , int((pos_x + player_width*math.sin(ang + math.pi/2))//tile_width)] != 0):
+                print('180') 
             else:
                 return 
             print('Collision' , tile_height, tile_width, player_height, player_width, pos_x , pos_y)
@@ -200,8 +206,8 @@ class GameMap(arcade.Section):
             no_of_tiles_x = self.tile_map.tiled_map.layers[0].size.width # self.tile_map.width
             no_of_tiles_y = self.tile_map.tiled_map.layers[0].size.height
             
-            radars = [-1,-1,-1,-1,-1,-1]
-            for i in range(0,200,10):
+            radars = [100,200,200,200,100,200]
+            for i in range(0,200,3):
                 check_x = pos_x + i*math.cos(ang * 0.0174533)
                 check_y = pos_y + i*math.sin(ang * 0.0174533)
 
@@ -212,7 +218,7 @@ class GameMap(arcade.Section):
                     break
             
             ang = (self.player_sprite.angle + 90 - 30)%360
-            for i in range(0,200,10):
+            for i in range(0,200,3):
                 check_x = pos_x + i*math.cos(ang* 0.0174533)
                 check_y = pos_y + i*math.sin(ang* 0.0174533)
 
@@ -223,7 +229,7 @@ class GameMap(arcade.Section):
                     break
             
             ang = (self.player_sprite.angle + 90 + 30)%360
-            for i in range(0,200,10):
+            for i in range(0,200,3):
                 check_x = pos_x + i*math.cos(ang* 0.0174533)
                 check_y = pos_y + i*math.sin(ang* 0.0174533)
 
@@ -233,7 +239,7 @@ class GameMap(arcade.Section):
                     # print(i)
                     break
             ang = (self.player_sprite.angle + 90 + 90)%360
-            for i in range(0,100,10):
+            for i in range(0,100,3):
                 check_x = pos_x + i*math.cos(ang* 0.0174533)
                 check_y = pos_y + i*math.sin(ang* 0.0174533)
 
@@ -244,7 +250,7 @@ class GameMap(arcade.Section):
                     break
 
             ang = (self.player_sprite.angle + 90 - 90)%360
-            for i in range(0,100,10):
+            for i in range(0,100,3):
                 check_x = pos_x + i*math.cos(ang* 0.0174533)
                 check_y = pos_y + i*math.sin(ang* 0.0174533)
 
@@ -253,7 +259,7 @@ class GameMap(arcade.Section):
                     radars[4] = i
                     # print(i)
                     break
-                
+            # print(radars)
             self.radars = radars[:]
 
     def draw_lines_direction(self):
@@ -276,17 +282,21 @@ class GameMap(arcade.Section):
         arcade.draw_circle_filled(pos_x + self.radars[2]*math.cos(ang1), pos_y + self.radars[2]*math.sin(ang1),3,arcade.color.GREEN)
         arcade.draw_circle_filled(pos_x + self.radars[3]*math.cos(ang2), pos_y + self.radars[3]*math.sin(ang2),3,arcade.color.RED)
         arcade.draw_circle_filled(pos_x + self.radars[1]*math.cos(ang3), pos_y + self.radars[1]*math.sin(ang3),3,arcade.color.RED)
-        arcade.draw_circle_filled(pos_x + self.radars[4]*math.cos(ang4), pos_y + self.radars[4]*math.sin(ang4),3,arcade.color.BLACK)
-        arcade.draw_circle_filled(pos_x + self.radars[0]*math.cos(ang5), pos_y + self.radars[0]*math.sin(ang5),3,arcade.color.BLACK)
+        arcade.draw_circle_filled(pos_x + self.radars[4]*math.cos(ang4), pos_y + self.radars[4]*math.sin(ang4),3,arcade.color.PURPLE)
+        arcade.draw_circle_filled(pos_x + self.radars[0]*math.cos(ang5), pos_y + self.radars[0]*math.sin(ang5),3,arcade.color.PURPLE)
 
-        ang = ((self.player_sprite.angle + 90)%360)*0.0174533
-        player_width = self.player_sprite.width/2   + 7
-        player_height = self.player_sprite.height/2 + 7
+        ang = (( abs(self.player_sprite.angle - 360) )%360)*0.0174533
+        player_width = ((self.player_sprite.width/2)**2 + (self.player_sprite.height/2)**2)**0.5  + 1
+        player_height = ((self.player_sprite.width/2)**2 + (self.player_sprite.height/2)**2)**0.5  + 1
+        
+        # print(( abs(self.player_sprite.angle - 360) )%360)
 
-        arcade.draw_circle_filled(pos_x + int(player_width*math.cos(ang + math.pi/4)), pos_y + int(player_height*math.sin(ang + math.pi/4)), 3,arcade.color.PINK)
-        arcade.draw_circle_filled(pos_x + int(player_width*math.cos(ang - math.pi/4)), pos_y + int(player_height*math.sin(ang - math.pi/4)), 3,arcade.color.PINK)
-        arcade.draw_circle_filled(pos_x + int(player_width*math.cos(ang + 3*math.pi/4)), pos_y + int(player_height*math.sin(ang + 3*math.pi/4)), 3,arcade.color.PINK)
-        arcade.draw_circle_filled(pos_x + int(player_width*math.cos(ang - 3*math.pi/4)), pos_y + int(player_height*math.sin(ang - 3*math.pi/4)), 3,arcade.color.PINK)
+        arcade.draw_circle_filled(pos_x  + int(player_width*math.sin(ang)), pos_y + int(player_width*math.cos(ang)), 3,arcade.color.PINK)
+        arcade.draw_circle_filled(pos_x  + int(player_width*math.sin(ang + math.pi)), pos_y + int(player_width*math.cos(ang + math.pi)), 3,arcade.color.PINK)
+        arcade.draw_circle_filled(pos_x  + int(player_width*math.sin(ang + math.pi/4)), pos_y + int(player_width*math.cos(ang + math.pi/4)), 3,arcade.color.PINK)
+        arcade.draw_circle_filled(pos_x  + int(player_width*math.sin(ang - math.pi/4)), pos_y + int(player_width*math.cos(ang - math.pi/4)), 3,arcade.color.PINK)
+        arcade.draw_circle_filled(pos_x  + int(player_width*math.sin(ang + 3*math.pi/4)), pos_y + int(player_width*math.cos(ang + 3*math.pi/4)), 3,arcade.color.PINK)
+        arcade.draw_circle_filled(pos_x  + int(player_width*math.sin(ang - 3*math.pi/4)), pos_y + int(player_width*math.cos(ang - 3*math.pi/4)), 3,arcade.color.PINK)
 
 
         # arcade.draw_line(pos_x,pos_y,pos_x-200*math.cos(ang),pos_y+200*math.sin(ang), arcade.color.RED)
@@ -359,7 +369,7 @@ class GameMap(arcade.Section):
         
 class CollegeMap(GameMap):
     def __init__(self,left: int, bottom: int, width: int, height: int,**kwargs):
-        super().__init__("./resources/car.png","./resources/simple_path_1.json",left, bottom, width, height, **kwargs)
+        super().__init__("./resources/car.png","./resources/black.tmj",left, bottom, width, height, **kwargs)
 
 
 class EmptyMap(GameMap):

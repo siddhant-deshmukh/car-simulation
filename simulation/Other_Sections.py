@@ -28,6 +28,8 @@ class InfoBar(arcade.Section):
                                           self.bottom, color=arcade.color.DARK_BROWN)
         arcade.draw_lrtb_rectangle_outline(self.left, self.right, self.top,
                                            self.bottom, COLOR_LIGHT)
+        self.steering_wheel.center_x = self.left + 50
+        self.steering_wheel.center_y = self.top - 50
         self.steering_wheel.draw()
         arcade.draw_text(f'Velocity x: {round(self.car.velocity[0],2)}',
                          self.left + self.width / 2, self.top - 15,
