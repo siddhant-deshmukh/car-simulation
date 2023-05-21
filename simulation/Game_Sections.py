@@ -15,6 +15,7 @@ ACCELERATION_ON_GEAR_CONSTANT = 0.03
 MAX_VELOCITY = 5
 MAX_ACCELERATION = 0.5
 MIN_VELOCITY = 0.05
+TIME_PENELTY = 0.008
 
 class GameMap(arcade.Section):
     def __init__(self, car_img_resource, map_resource, left: int, bottom: int, width: int, height: int,**kwargs):
@@ -137,7 +138,7 @@ class GameMap(arcade.Section):
         
         for point in self.checkPoints:
             arcade.draw_circle_filled( point[0]*self.tile_map.tile_width + self.tile_map.tile_width/2 , (self.tile_map.width - point[1])*self.tile_map.tile_width + self.tile_map.tile_width/2, 7,arcade.color.RED )
-        if len(self.checkPoints) > self.curr_check_point :
+        if len(self.checkPoints) > self.curr_check_point and len(self.checkPoints) != 0 :
             point = self.checkPoints[self.curr_check_point]
             arcade.draw_circle_filled( point[0]*self.tile_map.tile_width + self.tile_map.tile_width/2 , (self.tile_map.width - point[1])*self.tile_map.tile_width + self.tile_map.tile_width/2, 5,arcade.color.RED )
     
@@ -153,7 +154,7 @@ class GameMap(arcade.Section):
         self.physics_engine.update()
         self.center_camera_to_player()
 
-        self.score -= 0.008
+        self.score -= TIME_PENELTY
         self.pointRelationWithCheckPoint()
     
     def on_key_press(self, key, modifiers):
@@ -179,6 +180,8 @@ class GameMap(arcade.Section):
     #                                             helper functions getting call on every loop
     # -------------------------------------------------------------------------------------------------------------------  
     def pointRelationWithCheckPoint(self):
+        if len(self.endPoints) == 0:
+            return
         if len(self.endPoints) <= self.curr_check_point or len(self.checkPoints) <= self.curr_check_point:
             self.restart_game()
             return 
@@ -384,7 +387,6 @@ class GameMap(arcade.Section):
 
         return self.layer_grid_array[ no_of_tiles_y - 1 - int(pos_y//tile_height) , int((pos_x)//tile_width)]
 
-
     def restart_game(self):
         self.player_sprite.center_x = 100
         self.player_sprite.center_y = 160
@@ -409,6 +411,15 @@ class SimpleMap(GameMap):
         super().__init__("./resources/car.png","./resources/black.tmj",left, bottom, width, height, **kwargs)
         self.checkPoints = [ (10,132),(33,44),(118,15),(179,52),(142,111),(176,152),(154,193),(86,188),(32,188) ] #
 
+class SimpleMapAI(GameMap):
+    def __init__(self,left: int, bottom: int, width: int, height: int,**kwargs):
+        super().__init__("./resources/car.png","./resources/black.tmj",left, bottom, width, height, **kwargs)
+        self.checkPoints = [ (10,132),(33,44),(118,15),(179,52),(142,111),(176,152),(154,193),(86,188),(32,188) ] #
+    def on_key_press(self, key, modifiers):
+        pass 
+    def on_key_release(self, key, modifiers):
+        pass
+    
 
 class EmptyMap(GameMap):
     def __init__(self, left: int, bottom: int, width: int, height: int,**kwargs):
