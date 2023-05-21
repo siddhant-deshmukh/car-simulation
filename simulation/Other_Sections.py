@@ -19,7 +19,32 @@ class InfoBar(arcade.Section):
     @property
     def radars(self):
         return self.view.game_section.radars
+    @property
+    def score(self):
+        return self.view.game_section.score
+    @property
+    def distX(self):
+        points_array = self.view.game_section.checkPoints 
+        index = self.view.game_section.curr_check_point
 
+        if(len(points_array) <= index or index < 0):
+            return -1
+        tile_width = self.view.game_section.tile_map.tile_width 
+        # point[0]*self.tile_map.tile_width + self.tile_map.tile_width/2
+        return self.view.game_section.player_sprite.center_x - points_array[index][0]*tile_width + tile_width/2
+    @property
+    def distY(self):
+        points_array = self.view.game_section.checkPoints 
+        index = self.view.game_section.curr_check_point
+
+        if(len(points_array) <= index or index < 0):
+            return -1
+        
+        tile_width = self.view.game_section.tile_map.tile_width  
+        # point[0]*self.tile_map.tile_width + self.tile_map.tile_width/2
+        return self.view.game_section.player_sprite.center_y - (self.view.game_section.tile_map.height -1 -points_array[index][1])*tile_width + tile_width
+    
+    
     def on_draw(self):
         # print(self.car.velocity)
         # draw game info
@@ -31,6 +56,7 @@ class InfoBar(arcade.Section):
         self.steering_wheel.center_x = self.left + 50
         self.steering_wheel.center_y = self.top - 50
         self.steering_wheel.draw()
+        # Velocity
         arcade.draw_text(f'Velocity x: {round(self.car.velocity[0],2)}',
                          self.left + self.width / 2, self.top - 15,
                          COLOR_LIGHT,font_size=15)
@@ -40,7 +66,7 @@ class InfoBar(arcade.Section):
         arcade.draw_text(f'Speed: {round(math.sqrt(self.car.velocity[0]**2 + self.car.velocity[1]**2),2)}',
                          self.left + self.width / 2, self.top -  75,
                          COLOR_LIGHT,font_size=15)
-
+        # Positions
         arcade.draw_text(f'Wheel Angle: {round(self.car.steering_angle ,2)}',
                          self.left + self.width / 2 - 250, self.top -  15,
                          COLOR_LIGHT,font_size=15)
@@ -51,7 +77,7 @@ class InfoBar(arcade.Section):
                          self.left + self.width / 2 - 250, self.top -  85,
                          COLOR_LIGHT,font_size=15)
         
-
+        # Radars
         arcade.draw_text(f'Raders:',
                          self.left + self.width / 2 + 250, self.top -  15,
                          COLOR_LIGHT,font_size=12)
@@ -72,21 +98,17 @@ class InfoBar(arcade.Section):
                          self.left + self.width / 2 + 250, self.top -  90,
                          COLOR_LIGHT,font_size=10)
         
-        # arcade.draw_text(f'Center x: {round(self.car.center_x,2)}',
-        #                  self.left + self.width / 2 + 250, self.top -  20,
-        #                  COLOR_LIGHT)
-        # arcade.draw_text(f'Center y: {round(self.car.center_y,2)}',
-        #                  self.left + self.width / 2 + 250, self.top -  40,
-        #                  COLOR_LIGHT)
-
-        # ball_change_axis = self.ball.change_x, self.ball.change_y
-        # arcade.draw_text(f'Ball change in axis: {ball_change_axis}',
-        #                  self.left + 220, self.top - self.height / 1.6,
-        #                  COLOR_LIGHT)
-        # arcade.draw_text(f'Ball speed: {self.ball.speed} pixels/second',
-        #                  self.left + 480, self.top - self.height / 1.6,
-        #                  COLOR_LIGHT)
-
+        # Radars
+        arcade.draw_text(f' Score: {round(self.score ,2)}',
+                         self.left + self.width / 2 + 350, self.top -  30,
+                         COLOR_LIGHT,font_size=20)
+        arcade.draw_text(f' CheckPoint Dist X: {round(self.distX ,2)}',
+                         self.left + self.width / 2 + 350, self.top -  60,
+                         COLOR_LIGHT,font_size=12)
+        arcade.draw_text(f' CheckPoint Dist Y: {round(self.distY ,2)}',
+                         self.left + self.width / 2 + 350, self.top -  75,
+                         COLOR_LIGHT,font_size=12)
+        
     def on_resize(self, width: int, height: int):
         # stick to the top
         self.width = width

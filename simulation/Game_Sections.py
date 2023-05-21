@@ -48,7 +48,12 @@ class GameMap(arcade.Section):
         self.checkPoint_pos = 0
         self.score = 0
         
+        self.checkPoint_distX = 0
+        self.checkPoint_distY = 0
 
+    # -----------------------------------------------------------------------------------------------------------------
+    #                                              functions to  setup
+    # -------------------------------------------------------------------------------------------------------------------
     def setup(self):
         self.setup_camera()
         self.setup_scene()
@@ -89,54 +94,6 @@ class GameMap(arcade.Section):
                 self.player_sprite, gravity_constant=0, walls=self.scene["road_edges"]
             )
 
-            
-        
-    def on_draw(self):
-        self.scene.draw()
-        if(self.camera != None):
-            self.camera.use()
-        self.draw_lines_direction()
-        # for point in self.checkPoints :
-
-        for line in self.endPoints:
-            arcade.draw_line(line[0][0],line[0][1],line[1][0],line[1][1],arcade.color.GREEN_YELLOW,3)
-        
-        for point in self.checkPoints:
-            arcade.draw_circle_filled( point[0]*self.tile_map.tile_width + self.tile_map.tile_width/2 , (self.tile_map.width - point[1])*self.tile_map.tile_width + self.tile_map.tile_width/2, 7,arcade.color.RED )
-        if len(self.checkPoints) > self.curr_check_point :
-            point = self.checkPoints[self.curr_check_point]
-            arcade.draw_circle_filled( point[0]*self.tile_map.tile_width + self.tile_map.tile_width/2 , (self.tile_map.width - point[1])*self.tile_map.tile_width + self.tile_map.tile_width/2, 5,arcade.color.RED )
-    
-    def pointRelationWithCheckPoint(self):
-        if len(self.endPoints) < self.curr_check_point or len(self.checkPoints) < self.curr_check_point:
-            # end the game
-            return 
-        
-        end_points = self.endPoints[self.curr_check_point]
-        # print(end_points, self.player_sprite.center_x )
-        # print(self.player_sprite.center_x - end_points[0][0])
-        # print()
-
-        d = ( self.player_sprite.center_x - end_points[0][0] )*( end_points[1][1] - end_points[0][1] ) - ( self.player_sprite.center_y - end_points[0][1] )*( end_points[1][0] - end_points[0][0] ) 
-        d = d//abs(d)
-        
-        if(d != self.checkPoint_pos ):
-            self.curr_check_point += 1 
-            self.score += 100
-            print("score", self.score)
-            if len(self.endPoints) < self.curr_check_point or len(self.checkPoints) < self.curr_check_point:
-                # end the game
-                self.restart_game()
-                return 
-            
-            end_points = self.endPoints[self.curr_check_point]
-            d = ( self.player_sprite.center_x - end_points[0][0] )*( end_points[1][1] - end_points[0][1] ) - ( self.player_sprite.center_y - end_points[0][1] )*( end_points[1][0] - end_points[0][0] ) 
-            self.checkPoint_pos = d//abs(d)
-
-            return
-        else:
-            return
-
     def findSlope(self):
         for point in self.checkPoints:
             minLen = 10000
@@ -164,18 +121,97 @@ class GameMap(arcade.Section):
             # print(point , ans, (point[0]*self.tile_map.tile_width + self.tile_map.tile_width/2 , point[1]*self.tile_map.tile_width + self.tile_map.tile_width/2 ))
             self.endPoints.append(ans)
 
-    def checkTile(self,pos_x,pos_y):
-        if(pos_x < 0 or pos_y < 0):
-            return -1
-        tile_width = self.tile_map.tile_width
-        tile_height = self.tile_map.tile_height
-        no_of_tiles_y = self.tile_map.tiled_map.layers[0].size.height
+            
+    # -----------------------------------------------------------------------------------------------------------------
+    #                                              functions of the parent class
+    # -------------------------------------------------------------------------------------------------------------------  
+    def on_draw(self):
+        self.scene.draw()
+        if(self.camera != None):
+            self.camera.use()
+        self.draw_lines_direction()
+        # for point in self.checkPoints :
 
-        if(int((pos_x)//tile_width) >= self.tile_map.width or (no_of_tiles_y - 1 - int(pos_y//tile_height)) >= self.tile_map.height):
-            return -1
+        for line in self.endPoints:
+            arcade.draw_line(line[0][0],line[0][1],line[1][0],line[1][1],arcade.color.GREEN_YELLOW,3)
+        
+        for point in self.checkPoints:
+            arcade.draw_circle_filled( point[0]*self.tile_map.tile_width + self.tile_map.tile_width/2 , (self.tile_map.width - point[1])*self.tile_map.tile_width + self.tile_map.tile_width/2, 7,arcade.color.RED )
+        if len(self.checkPoints) > self.curr_check_point :
+            point = self.checkPoints[self.curr_check_point]
+            arcade.draw_circle_filled( point[0]*self.tile_map.tile_width + self.tile_map.tile_width/2 , (self.tile_map.width - point[1])*self.tile_map.tile_width + self.tile_map.tile_width/2, 5,arcade.color.RED )
+    
+    def on_update(self, delta_time: float):
+        
+        self.check_collision_with_wall()
+        self.player_sprite.control_key_turn(self.turning_key)
+        self.player_sprite.control_key_acc(self.acceleration_key)
+        self.restrict_movement()
+        self.check_radar()
+        
+        # self.draw_lines_direction()
+        self.physics_engine.update()
+        self.center_camera_to_player()
 
-        return self.layer_grid_array[ no_of_tiles_y - 1 - int(pos_y//tile_height) , int((pos_x)//tile_width)]
+        self.score -= 0.008
+        self.pointRelationWithCheckPoint()
+    
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.SPACE :
+            self.acceleration_key = 'BRAKE'
+        elif key == arcade.key.UP or key == arcade.key.W:
+            self.acceleration_key = 'UP'
+        elif key == arcade.key.DOWN or key == arcade.key.S:
+            self.acceleration_key = 'DOWN'
 
+        if key == arcade.key.LEFT or key == arcade.key.A:
+            self.turning_key = 'LEFT'
+        elif key == arcade.key.RIGHT or key == arcade.key.D:
+            self.turning_key = 'RIGHT'
+
+    def on_key_release(self, key, modifiers):
+        if key == arcade.key.UP or key==arcade.key.W or key == arcade.key.DOWN or key == arcade.key.SPACE or key==arcade.key.S:
+            self.acceleration_key = ''
+        if key == arcade.key.LEFT or key == arcade.key.A or key == arcade.key.D or key == arcade.key.RIGHT:
+            self.turning_key = ''
+
+    # -----------------------------------------------------------------------------------------------------------------
+    #                                             helper functions getting call on every loop
+    # -------------------------------------------------------------------------------------------------------------------  
+    def pointRelationWithCheckPoint(self):
+        if len(self.endPoints) <= self.curr_check_point or len(self.checkPoints) <= self.curr_check_point:
+            self.restart_game()
+            return 
+        
+        end_points = self.endPoints[self.curr_check_point]
+        # print(end_points, self.player_sprite.center_x )
+        # print(self.player_sprite.center_x - end_points[0][0])
+        # print()
+
+        d = ( self.player_sprite.center_x - end_points[0][0] )*( end_points[1][1] - end_points[0][1] ) - ( self.player_sprite.center_y - end_points[0][1] )*( end_points[1][0] - end_points[0][0] ) 
+        if(d!=0):
+            d = d//abs(d)
+        
+        # print( end_points ,self.checkPoint_pos)
+        if(d != self.checkPoint_pos ):
+            self.curr_check_point += 1 
+            self.score += 100
+            print("score", self.score)
+            if len(self.endPoints) <= self.curr_check_point or len(self.checkPoints) <= self.curr_check_point:
+                # end the game
+                self.restart_game()
+                return 
+            
+            end_points = self.endPoints[self.curr_check_point]
+            d = ( self.player_sprite.center_x - end_points[0][0] )*( end_points[1][1] - end_points[0][1] ) - ( self.player_sprite.center_y - end_points[0][1] )*( end_points[1][0] - end_points[0][0] ) 
+            if(d!=0):
+                self.checkPoint_pos = d//abs(d)
+            else:
+                self.checkPoint_pos = 0
+
+            return
+        else:
+            return
 
     def center_camera_to_player(self):
         # print(self.width , self.height)
@@ -201,25 +237,6 @@ class GameMap(arcade.Section):
 
         self.camera.move_to(player_centered)
 
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.SPACE :
-            self.acceleration_key = 'BRAKE'
-        elif key == arcade.key.UP or key == arcade.key.W:
-            self.acceleration_key = 'UP'
-        elif key == arcade.key.DOWN or key == arcade.key.S:
-            self.acceleration_key = 'DOWN'
-
-        if key == arcade.key.LEFT or key == arcade.key.A:
-            self.turning_key = 'LEFT'
-        elif key == arcade.key.RIGHT or key == arcade.key.D:
-            self.turning_key = 'RIGHT'
-
-    def on_key_release(self, key, modifiers):
-        if key == arcade.key.UP or key==arcade.key.W or key == arcade.key.DOWN or key == arcade.key.SPACE or key==arcade.key.S:
-            self.acceleration_key = ''
-        if key == arcade.key.LEFT or key == arcade.key.A or key == arcade.key.D or key == arcade.key.RIGHT:
-            self.turning_key = ''
-
     def check_collision_with_wall(self):
 
         if(self.tile_map != None):
@@ -244,17 +261,6 @@ class GameMap(arcade.Section):
             print()
             self.restart_game()
             
-    def restart_game(self):
-        self.player_sprite.center_x = 100
-        self.player_sprite.center_y = 160
-        self.player_sprite.change_x = 0
-        self.player_sprite.change_y = 0
-        self.player_sprite.change_angle = 0
-        self.player_sprite.angle = 0
-
-        self.score = 0
-        self.curr_check_point = -1
-
     def check_radar(self):
         if(self.tile_map != None):
             pos_x = self.player_sprite.center_x
@@ -361,19 +367,37 @@ class GameMap(arcade.Section):
         if (self.player_sprite.center_y + self.player_sprite.change_y + self.player_sprite.height > self.tile_map.height*self.tile_map.tile_height ) or (self.player_sprite.center_y + self.player_sprite.change_y - self.player_sprite.height < 0 ):
             self.player_sprite.change_y = 0
 
-    def on_update(self, delta_time: float):
-        
-        self.check_collision_with_wall()
-        self.player_sprite.control_key_turn(self.turning_key)
-        self.player_sprite.control_key_acc(self.acceleration_key)
-        self.restrict_movement()
-        self.check_radar()
-        
-        # self.draw_lines_direction()
-        self.physics_engine.update()
-        self.center_camera_to_player()
+    
+    # -----------------------------------------------------------------------------------------------------------------
+    #                                               helper functions 
+    # -------------------------------------------------------------------------------------------------------------------  
 
-        self.pointRelationWithCheckPoint()
+    def checkTile(self,pos_x,pos_y):
+        if(pos_x < 0 or pos_y < 0):
+            return -1
+        tile_width = self.tile_map.tile_width
+        tile_height = self.tile_map.tile_height
+        no_of_tiles_y = self.tile_map.tiled_map.layers[0].size.height
+
+        if(int((pos_x)//tile_width) >= self.tile_map.width or (no_of_tiles_y - 1 - int(pos_y//tile_height)) >= self.tile_map.height):
+            return -1
+
+        return self.layer_grid_array[ no_of_tiles_y - 1 - int(pos_y//tile_height) , int((pos_x)//tile_width)]
+
+
+    def restart_game(self):
+        self.player_sprite.center_x = 100
+        self.player_sprite.center_y = 160
+        self.player_sprite.change_x = 0
+        self.player_sprite.change_y = 0
+        self.player_sprite.change_angle = 0
+        self.player_sprite.angle = 0
+
+        self.score = 0
+        self.curr_check_point = -1
+        self.checkPoint_pos = 0
+        # print(self.score,self.curr_check_point)
+
         
 class CollegeMap(GameMap):
     def __init__(self,left: int, bottom: int, width: int, height: int,**kwargs):
@@ -383,7 +407,7 @@ class CollegeMap(GameMap):
 class SimpleMap(GameMap):
     def __init__(self,left: int, bottom: int, width: int, height: int,**kwargs):
         super().__init__("./resources/car.png","./resources/black.tmj",left, bottom, width, height, **kwargs)
-        self.checkPoints = [ (10,132),(33,44),(118,15),(179,52),(142,111),(176,152),(154,193),(86,188),(32,188) ]
+        self.checkPoints = [ (10,132),(33,44),(118,15),(179,52),(142,111),(176,152),(154,193),(86,188),(32,188) ] #
 
 
 class EmptyMap(GameMap):
