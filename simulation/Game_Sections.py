@@ -41,6 +41,13 @@ class GameMap(arcade.Section):
         self.layer_grid_array = np.array([])   
 
         self.radars = [-1,-1,-1,-1,-1,-1]
+        self.checkPoints = []
+        self.curr_check_point = -1
+        self.endPoints = []
+        
+        self.checkPoint_pos = 0
+        self.score = 0
+        
 
     def setup(self):
         self.setup_camera()
@@ -56,9 +63,7 @@ class GameMap(arcade.Section):
         self.player_sprite = Car.PlayerCar(image_source,CHARACTER_SCALING,center_x=100,center_y=160)
 
         self.scene.add_sprite('Player',self.player_sprite)
-
-        # print(self.player_sprite.width, self.player_sprite.height)
-
+        
         map_name = self.map_resource
         if(map_name == None):
             self.physics_engine = arcade.PhysicsEnginePlatformer(
@@ -73,18 +78,10 @@ class GameMap(arcade.Section):
             self.tile_map = arcade.load_tilemap(map_name, TILE_SCALING, layer_options,True,hit_box_algorithm='Detailed')
             self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
-
-            # print(self.tile_map.height, self.tile_map.width, self.tile_map.tile_height, self.tile_map.tile_width)
-            # print(self.tile_map.sprite_lists['road_edges'], self.tile_map.tiled_map.layers[0].size.height)
-            # print(self.tile_map.tiled_map.layers[0].data)
-
+            # print(self.checkPoints)
+            
             self.layer_grid_array = np.array(self.tile_map.tiled_map.layers[0].data)
-            # print()
-            # print(self.layer_grid_array[40:,:10])
-            # print()
-            # print(self.layer_grid_array)
-            # if self.tile_map.background_color:
-            #     arcade.set_background_color(self.tile_map.background_color)
+            self.findSlope()
 
             self.scene.add_sprite('Player',self.player_sprite)
         
@@ -99,6 +96,86 @@ class GameMap(arcade.Section):
         if(self.camera != None):
             self.camera.use()
         self.draw_lines_direction()
+        # for point in self.checkPoints :
+
+        for line in self.endPoints:
+            arcade.draw_line(line[0][0],line[0][1],line[1][0],line[1][1],arcade.color.GREEN_YELLOW,3)
+        
+        for point in self.checkPoints:
+            arcade.draw_circle_filled( point[0]*self.tile_map.tile_width + self.tile_map.tile_width/2 , (self.tile_map.width - point[1])*self.tile_map.tile_width + self.tile_map.tile_width/2, 7,arcade.color.RED )
+        if len(self.checkPoints) > self.curr_check_point :
+            point = self.checkPoints[self.curr_check_point]
+            arcade.draw_circle_filled( point[0]*self.tile_map.tile_width + self.tile_map.tile_width/2 , (self.tile_map.width - point[1])*self.tile_map.tile_width + self.tile_map.tile_width/2, 5,arcade.color.RED )
+    
+    def pointRelationWithCheckPoint(self):
+        if len(self.endPoints) < self.curr_check_point or len(self.checkPoints) < self.curr_check_point:
+            # end the game
+            return 
+        
+        end_points = self.endPoints[self.curr_check_point]
+        # print(end_points, self.player_sprite.center_x )
+        # print(self.player_sprite.center_x - end_points[0][0])
+        # print()
+
+        d = ( self.player_sprite.center_x - end_points[0][0] )*( end_points[1][1] - end_points[0][1] ) - ( self.player_sprite.center_y - end_points[0][1] )*( end_points[1][0] - end_points[0][0] ) 
+        d = d//abs(d)
+        
+        if(d != self.checkPoint_pos ):
+            self.curr_check_point += 1 
+            self.score += 100
+            print("score", self.score)
+            if len(self.endPoints) < self.curr_check_point or len(self.checkPoints) < self.curr_check_point:
+                # end the game
+                self.restart_game()
+                return 
+            
+            end_points = self.endPoints[self.curr_check_point]
+            d = ( self.player_sprite.center_x - end_points[0][0] )*( end_points[1][1] - end_points[0][1] ) - ( self.player_sprite.center_y - end_points[0][1] )*( end_points[1][0] - end_points[0][0] ) 
+            self.checkPoint_pos = d//abs(d)
+
+            return
+        else:
+            return
+
+    def findSlope(self):
+        for point in self.checkPoints:
+            minLen = 10000
+            ans = [(0,0),(0,0)]
+            for ang in range(0,360,10):
+                end1 = [point[0]*self.tile_map.tile_width + self.tile_map.tile_width/2 , ( self.tile_map.height -1 - point[1])*self.tile_map.tile_width + self.tile_map.tile_width/2 ]
+                end2 = [point[0]*self.tile_map.tile_width + self.tile_map.tile_width/2 , ( self.tile_map.height -1 - point[1])*self.tile_map.tile_width + self.tile_map.tile_width/2 ]
+                angle = ang*0.0174533 
+                for i in range(0,2000,1):
+                    # end1 = ( end1[0] + 5*math.cos(angle) , end2[1] + 5*math.sin(angle) )
+                    end1[0] += 5*math.cos(angle)
+                    end1[1] += 5*math.sin(angle)
+                    if(  self.checkTile(end1[0],end1[1]) != 0):
+                        break
+                for i in range(0,2000,1):
+                    # end2 = ( end2[0] + 5*math.cos(angle + math.pi) , end2[1] + 5*math.sin(angle + math.pi) )
+                    end2[0] += 5*math.cos(angle + math.pi)
+                    end2[1] += 5*math.sin(angle + math.pi)
+                    if(  self.checkTile(end2[0],end2[1]) != 0):
+                        break
+                dist = ((end1[0] - end2[0])**2  + (end1[1]- end2[1])**2  )**0.5 
+                if(dist < minLen):
+                    minLen = dist
+                    ans = [end1,end2]
+            # print(point , ans, (point[0]*self.tile_map.tile_width + self.tile_map.tile_width/2 , point[1]*self.tile_map.tile_width + self.tile_map.tile_width/2 ))
+            self.endPoints.append(ans)
+
+    def checkTile(self,pos_x,pos_y):
+        if(pos_x < 0 or pos_y < 0):
+            return -1
+        tile_width = self.tile_map.tile_width
+        tile_height = self.tile_map.tile_height
+        no_of_tiles_y = self.tile_map.tiled_map.layers[0].size.height
+
+        if(int((pos_x)//tile_width) >= self.tile_map.width or (no_of_tiles_y - 1 - int(pos_y//tile_height)) >= self.tile_map.height):
+            return -1
+
+        return self.layer_grid_array[ no_of_tiles_y - 1 - int(pos_y//tile_height) , int((pos_x)//tile_width)]
+
 
     def center_camera_to_player(self):
         # print(self.width , self.height)
@@ -150,49 +227,33 @@ class GameMap(arcade.Section):
             pos_y = self.player_sprite.center_y
             player_width = ((self.player_sprite.width/2)**2 + (self.player_sprite.height/2)**2)**0.5  + 3
             player_height = ((self.player_sprite.width/2)**2 + (self.player_sprite.height/2)**2)**0.5  + 3
-
-            # player_width = self.player_sprite.width//2   + 7
-            # player_height = self.player_sprite.height//2 + 7
-
-            tile_width = self.tile_map.tile_width
-            tile_height = self.tile_map.tile_height
-            no_of_tiles_x = self.tile_map.tiled_map.layers[0].size.width # self.tile_map.width
-            no_of_tiles_y = self.tile_map.tiled_map.layers[0].size.height # self.tile_map.height
-
-            ang = ((self.player_sprite.angle + 90)%360)*0.0174533
             
-            # print( 'x :', int((pos_x + player_width*math.cos(ang + math.pi/4)))//tile_width , '\t y:', no_of_tiles_y - 1 - int((pos_y + player_height*math.sin(ang + math.pi/4)))//tile_height)
+            ang = ((abs(self.player_sprite.angle - 360))%360)*0.0174533 
             
-            # pos_x  + int(player_width*math.sin(ang)), pos_y + int(player_width*math.cos(ang))
-
-            if(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.cos(ang + math.pi/4))//tile_height) , int((pos_x + player_width*math.sin(ang + math.pi/4))//tile_width)] != 0):
-                print('45')
-            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.cos(ang - math.pi/4))//tile_height) , int((pos_x + player_width*math.sin(ang - math.pi/4))//tile_width)] != 0):
-                print('-45')
-            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.cos(ang + 3*math.pi/4))//tile_height) , int((pos_x + player_width*math.sin(ang + 3*math.pi/4))//tile_width)] != 0):
-                print('-135')
-            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.cos(ang - 3*math.pi/4))//tile_height) , int((pos_x + player_width*math.sin(ang - 3*math.pi/4))//tile_width)] != 0):
-                print('135')
-            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.cos(ang))//tile_height) , int((pos_x + player_width*math.sin(ang ))//tile_width)] != 0):
-                print('0')
-            elif(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height*math.cos(ang + math.pi/2))//tile_height) , int((pos_x + player_width*math.sin(ang + math.pi/2))//tile_width)] != 0):
-                print('180') 
-            else:
-                return 
-            print('Collision' , tile_height, tile_width, player_height, player_width, pos_x , pos_y)
-            # print(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height)//tile_height) , int((pos_x + player_width)//tile_width)] , no_of_tiles_y - 1 - int((pos_y + player_height)//tile_height) , int((pos_x + player_width)//tile_width) )
-            # print(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y + player_height)//tile_height) , int((pos_x - player_width)//tile_width)] , no_of_tiles_y - 1 - int((pos_y + player_height)//tile_height) , int((pos_x - player_width)//tile_width) )
-            # print(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y - player_height)//tile_height) , int((pos_x - player_width)//tile_width)] , no_of_tiles_y - 1 - int((pos_y - player_height)//tile_height) , int((pos_x - player_width)//tile_width) )
-            # print(self.layer_grid_array[ no_of_tiles_y - 1 - int((pos_y - player_height)//tile_height) , int((pos_x + player_width)//tile_width)] , no_of_tiles_y - 1 - int((pos_y - player_height)//tile_height) , int((pos_x + player_width)//tile_width) )
+            phase_angles = [math.pi/4,-math.pi/4,3*math.pi/4,-3*math.pi/4,0,math.pi]
+            check = True 
+            for phase_angle in phase_angles:
+                if( self.checkTile(pos_x + player_width*math.sin(ang + phase_angle) , pos_y + player_height*math.cos(ang + phase_angle))  != 0):
+                    check = False
+                    print(phase_angle , (phase_angle*180)/math.pi )
+                    break
+            if(check):
+                return
             
+            print('Collision' , pos_x , pos_y)
             print()
+            self.restart_game()
+            
+    def restart_game(self):
+        self.player_sprite.center_x = 100
+        self.player_sprite.center_y = 160
+        self.player_sprite.change_x = 0
+        self.player_sprite.change_y = 0
+        self.player_sprite.change_angle = 0
+        self.player_sprite.angle = 0
 
-            self.player_sprite.center_x = 100
-            self.player_sprite.center_y = 160
-            self.player_sprite.change_x = 0
-            self.player_sprite.change_y = 0
-            self.player_sprite.change_angle = 0
-            self.player_sprite.angle = 0
+        self.score = 0
+        self.curr_check_point = -1
 
     def check_radar(self):
         if(self.tile_map != None):
@@ -201,18 +262,13 @@ class GameMap(arcade.Section):
 
             ang = (self.player_sprite.angle + 90)%360
             
-            tile_width = self.tile_map.tile_width
-            tile_height = self.tile_map.tile_height
-            no_of_tiles_x = self.tile_map.tiled_map.layers[0].size.width # self.tile_map.width
-            no_of_tiles_y = self.tile_map.tiled_map.layers[0].size.height
-            
             radars = [100,200,200,200,100,200]
             for i in range(0,200,3):
                 check_x = pos_x + i*math.cos(ang * 0.0174533)
                 check_y = pos_y + i*math.sin(ang * 0.0174533)
 
                 # print(check_x,check_y)
-                if(self.layer_grid_array[no_of_tiles_y - 1 - int(check_y//tile_height) , int(check_x//tile_width)] != 0):
+                if(self.checkTile(check_x,check_y) != 0):
                     radars[2] = i
                     # print(i)
                     break
@@ -223,7 +279,7 @@ class GameMap(arcade.Section):
                 check_y = pos_y + i*math.sin(ang* 0.0174533)
 
                 # print(check_x,check_y)
-                if(self.layer_grid_array[no_of_tiles_y - 1 - int(check_y//tile_height) , int(check_x//tile_width)] != 0):
+                if(self.checkTile(check_x,check_y) != 0):
                     radars[3] = i
                     # print(i)
                     break
@@ -234,7 +290,7 @@ class GameMap(arcade.Section):
                 check_y = pos_y + i*math.sin(ang* 0.0174533)
 
                 # print(check_x,check_y)
-                if(self.layer_grid_array[no_of_tiles_y - 1 - int(check_y//tile_height) , int(check_x//tile_width)] != 0):
+                if(self.checkTile(check_x,check_y) != 0):
                     radars[1] = i
                     # print(i)
                     break
@@ -244,7 +300,7 @@ class GameMap(arcade.Section):
                 check_y = pos_y + i*math.sin(ang* 0.0174533)
 
                 # print(check_x,check_y)
-                if(self.layer_grid_array[no_of_tiles_y - 1 - int(check_y//tile_height) , int(check_x//tile_width)] != 0):
+                if(self.checkTile(check_x,check_y) != 0):
                     radars[0] = i
                     # print(i)
                     break
@@ -255,7 +311,7 @@ class GameMap(arcade.Section):
                 check_y = pos_y + i*math.sin(ang* 0.0174533)
 
                 # print(check_x,check_y)
-                if(self.layer_grid_array[no_of_tiles_y - 1 - int(check_y//tile_height) , int(check_x//tile_width)] != 0):
+                if(self.checkTile(check_x,check_y) != 0):
                     radars[4] = i
                     # print(i)
                     break
@@ -263,7 +319,7 @@ class GameMap(arcade.Section):
             self.radars = radars[:]
 
     def draw_lines_direction(self):
-        pos_x = self.player_sprite.center_x
+        pos_x = self.player_sprite.center_x 
         pos_y = self.player_sprite.center_y
         ang   = self.player_sprite.angle%360 * 0.0174533
 
@@ -297,44 +353,6 @@ class GameMap(arcade.Section):
         arcade.draw_circle_filled(pos_x  + int(player_width*math.sin(ang - math.pi/4)), pos_y + int(player_width*math.cos(ang - math.pi/4)), 3,arcade.color.PINK)
         arcade.draw_circle_filled(pos_x  + int(player_width*math.sin(ang + 3*math.pi/4)), pos_y + int(player_width*math.cos(ang + 3*math.pi/4)), 3,arcade.color.PINK)
         arcade.draw_circle_filled(pos_x  + int(player_width*math.sin(ang - 3*math.pi/4)), pos_y + int(player_width*math.cos(ang - 3*math.pi/4)), 3,arcade.color.PINK)
-
-
-        # arcade.draw_line(pos_x,pos_y,pos_x-200*math.cos(ang),pos_y+200*math.sin(ang), arcade.color.RED)
-        # arcade.draw_line(pos_x,pos_y,pos_x-200*math.cos(ang),pos_y+200*math.sin(ang), arcade.color.BROWN)
-        
-        # self.scene.add_sprite()
-        pass
-    # def move_car_mode(self):
-
-    #     if self.mode == 0:  #break
-    #         if self.velocity > MIN_VELOCITY:
-    #             self.acceleration = ACCELERATION_ON_BREAK
-    #             self.velocity += self.acceleration 
-    #         else:
-    #             self.acceleration = 0
-    #             self.velocity = 0
-    #     elif self.mode == 1: #acceleration
-    #         # print(self.player_sprite.angle)
-
-    #         if self.acceleration < 0 :
-    #             self.acceleration = 0
-    #         self.acceleration += ACCELERATION_ON_GEAR_CONSTANT
-    #         self.velocity += self.acceleration 
-    #         if self.acceleration > MAX_ACCELERATION:
-    #             self.acceleration = MAX_ACCELERATION
-    #         if self.velocity > MAX_VELOCITY:
-    #             self.velocity = MAX_VELOCITY 
-    #     else: #stoped acceleration
-    #         self.acceleration = ACCELERATION_ON_NOTHING
-    #         self.velocity += self.acceleration 
-    #         if self.velocity < MIN_VELOCITY:
-    #             self.velocity = 0
-                
-    #     self.player_sprite.change_x = self.velocity * -1*math.sin(self.player_sprite.radians)
-    #     self.player_sprite.change_y = self.velocity * 1*math.cos(self.player_sprite.radians) 
-        
-    #     self.restrict_movement()
-
         
     def restrict_movement(self):
         if (self.player_sprite.center_x + self.player_sprite.change_x + self.player_sprite.height > self.tile_map.width*self.tile_map.tile_width ) or (self.player_sprite.center_x + self.player_sprite.change_x - self.player_sprite.height< 0 ):
@@ -345,18 +363,6 @@ class GameMap(arcade.Section):
 
     def on_update(self, delta_time: float):
         
-
-        # if arcade.check_for_collision_with_list(self.player_sprite, self.tile_map.sprite_lists['road_edges'], 1) :
-
-        #     self.player_sprite.change_x = 0
-        #     self.player_sprite.change_y = 0
-
-        #     self.player_sprite.center_x = 100
-        #     self.player_sprite.center_y = 160
-        #     print('Collision!!!')
-
-        # self.move_car_mode()
-
         self.check_collision_with_wall()
         self.player_sprite.control_key_turn(self.turning_key)
         self.player_sprite.control_key_acc(self.acceleration_key)
@@ -366,10 +372,18 @@ class GameMap(arcade.Section):
         # self.draw_lines_direction()
         self.physics_engine.update()
         self.center_camera_to_player()
+
+        self.pointRelationWithCheckPoint()
         
 class CollegeMap(GameMap):
     def __init__(self,left: int, bottom: int, width: int, height: int,**kwargs):
+        super().__init__("./resources/car.png","./resources/simple_path_1.json",left, bottom, width, height, **kwargs)
+        self.checkPoints = [ (10,132),(33,44),(118,15),(179,52),(142,111),(176,152),(154,193),(86,188),(32,188) ]
+
+class SimpleMap(GameMap):
+    def __init__(self,left: int, bottom: int, width: int, height: int,**kwargs):
         super().__init__("./resources/car.png","./resources/black.tmj",left, bottom, width, height, **kwargs)
+        self.checkPoints = [ (10,132),(33,44),(118,15),(179,52),(142,111),(176,152),(154,193),(86,188),(32,188) ]
 
 
 class EmptyMap(GameMap):
